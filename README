@@ -1,0 +1,25 @@
+I searched and did not find a complete code example of compute shader, so I publicized here when I finished it. And it is also a record in case that I myself may need it some time later.
+
+It is verifiedy on Android O, i think it is easy to be ported to other systems
+
+Steps to build within Andriod source tree.
+
+1. cd your_path_to_android/frameworks/native/opengl/tests/
+
+2. modify Android.bp as:
+--- a/opengl/tests/Android.bp
++++ b/opengl/tests/Android.bp
+@@ -1,6 +1,7 @@
+ 
+ subdirs = [
+     "angeles",
++    "gles32_compute_shader_basic",
+     "configdump",
+     "EGLTest",
+     "fillrate",
+
+3. git clone https://github.com/guoyejun/gles32_compute_shader_basic.git
+
+4. cd gles32_compute_shader_basic
+
+5. mm
