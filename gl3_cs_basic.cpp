@@ -26,8 +26,6 @@ static const char gComputeShader[] =
     "    output0.data[idx] = f;\n"
     "}\n";
 
-GLuint arraySize = 8000;
-
 #define CHECK() \
 {\
     GLenum err = glGetError(); \
@@ -93,18 +91,20 @@ GLuint createComputeProgram(const char* pComputeSource) {
     return program;
 }
 
-void setupSSBufferObject(GLuint& ssbo, GLuint index)
+void setupSSBufferObject(GLuint& ssbo, GLuint index, float* pIn, GLuint count)
 {
-    GLuint countInByte = arraySize * sizeof(float);
     glGenBuffers(1, &ssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, countInByte, NULL, GL_STATIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, count * sizeof(float), NULL, GL_STATIC_DRAW);
 
     GLint bufMask = GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT;
-    float* p = (float*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, countInByte, bufMask);
-    for (GLuint i = 0; i < arraySize; ++i)
+    float* p = (float*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, count * sizeof(float), bufMask);
+    for (GLuint i = 0; i < count; ++i)
     {
-        p[i] = i;
+        if (pIn == NULL)
+            p[i] = 7.28f;
+        else
+            p[i] = pIn[i];
     }
     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
@@ -121,9 +121,18 @@ void tryComputeShader()
     CHECK();
     computeProgram = createComputeProgram(gComputeShader);
     CHECK();
-    setupSSBufferObject(input0SSbo, 0);
-    setupSSBufferObject(input1SSbo, 1);
-    setupSSBufferObject(outputSSbo, 2);
+
+    const GLuint arraySize = 8000;
+    float f0[arraySize];
+    float f1[arraySize];
+    for (GLuint i = 0; i < arraySize; ++i)
+    {
+        f0[i] = i;
+        f1[i] = i;
+    }
+    setupSSBufferObject(input0SSbo, 0, f0, arraySize);
+    setupSSBufferObject(input1SSbo, 1, f1, arraySize);
+    setupSSBufferObject(outputSSbo, 2, NULL, arraySize);
     CHECK();
 
     glUseProgram(computeProgram);
@@ -134,9 +143,9 @@ void tryComputeShader()
     float* pOut = (float*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, arraySize * sizeof(float), GL_MAP_READ_BIT);
     for (GLuint i = 0; i < arraySize; ++i)
     {
-        if (fabs(pOut[i] - i*2) > 0.0001)
+        if (fabs(pOut[i] - (f0[i]+f1[i])) > 0.0001)
         {
-            printf("verification FAILED at array index %d, actual: %f, expected: %f\n", i, pOut[i], i*2.0f);
+            printf("verification FAILED at array index %d, actual: %f, expected: %f\n", i, pOut[i], f0[i]+f1[i]);
             glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
             return;
         }
