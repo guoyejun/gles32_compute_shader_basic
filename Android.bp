@@ -18,6 +18,7 @@ cc_test {
 
     cflags: [
         "-DGL_GLEXT_PROTOTYPES",
+	"-Wall",
         "-g",
         "-O0",
     ],
