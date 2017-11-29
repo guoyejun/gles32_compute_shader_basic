@@ -1,9 +1,12 @@
 I searched and did not find a complete code example of compute shader, so I publicized here when I finished it. And it is also a record in case that I myself may need it some time later.
 
-It is verifiedy on Android O, i think it is easy to be ported to other systems
+
+To build within Linux, just run 'make'.
+If there's build issue, try to install the necessary libraries, such as the following:
+apt-get install libgles2-mesa-dev libegl1-mesa-dev
+
 
 Steps to build within Andriod source tree.
-
 1. cd your_path_to_android/frameworks/native/opengl/tests/
 
 2. modify Android.bp as:
