@@ -95,19 +95,8 @@ void setupSSBufferObject(GLuint& ssbo, GLuint index, float* pIn, GLuint count)
 {
     glGenBuffers(1, &ssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, count * sizeof(float), NULL, GL_STATIC_DRAW);
 
-    GLint bufMask = GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT;
-    float* p = (float*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, count * sizeof(float), bufMask);
-    for (GLuint i = 0; i < count; ++i)
-    {
-        if (pIn == NULL)
-            p[i] = 7.28f;
-        else
-            p[i] = pIn[i];
-    }
-    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-
+    glBufferData(GL_SHADER_STORAGE_BUFFER, count * sizeof(float), pIn, GL_STATIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, ssbo);
 }
 
@@ -137,6 +126,7 @@ void tryComputeShader()
 
     glUseProgram(computeProgram);
     glDispatchCompute(1000,1,1);   // arraySize/local_size_x
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     CHECK();
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputSSbo);
